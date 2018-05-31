@@ -9,7 +9,7 @@ RU:
 EN:
 This is main logic of Alice skill 'Sea war'
 Writing by Saidumarov Semen and Elizarova Anastasiya
-Rewriting and removing crutches (But it is not exactly) by Din Dmitiy
+Rewriting and removing crutches (But it is not exactly) by Din Dmitriy
 """
 
 from __future__ import unicode_literals
