@@ -132,7 +132,7 @@ def handle_dialog(request, response, user_storage):
                           ' координаты.')
 
         # response.set_buttons(buttons)
-        return response, user_storage = None:
+        return response, user_storage = None
         
     
     ###DEBUG
