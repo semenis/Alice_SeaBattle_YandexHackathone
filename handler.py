@@ -134,22 +134,7 @@ def handle_dialog(request, response, user_storage):
         # response.set_buttons(buttons)
         return response, user_storage        
     
-    ###DEBUG
-    print(user_storage)
-    ship_battle = ShipBattle()
-    ship_battle.place_ships()
-    if user_storage == None:
-        user_storage = {
-            "user_id": request.user_id,
-            "humans_turn": True,
-            "life": sum(SHIPS),
-            "AliceTurns": [],
-            "Alices_matrix": ship_battle.field,
-            "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
-            "sinked_ship": [],
-            "cheating_stage": 0
-        }
-    ###DEBUG_END
+
     
     
     
