@@ -136,7 +136,7 @@ def handle_dialog(request, response, user_storage):
     
     ###DEBUG
     print(user_storage)
-    if user_storage = None:
+    if user_storage == None:
         user_storage = {
             "user_id": request.user_id,
             "humans_turn": True,
