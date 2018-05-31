@@ -133,7 +133,7 @@ def handle_dialog(request, response, user_storage):
 
         # response.set_buttons(buttons)
         return response, user_storage
-
+    print(user_storage)
     # Обрабатываем ответ пользователя.
     user_message = request.command.lower().strip().replace(' ', '')
 
