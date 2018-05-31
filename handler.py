@@ -136,6 +136,8 @@ def handle_dialog(request, response, user_storage):
     
     ###DEBUG
     print(user_storage)
+    ship_battle = ShipBattle()
+    ship_battle.place_ships()
     if user_storage == None:
         user_storage = {
             "user_id": request.user_id,
