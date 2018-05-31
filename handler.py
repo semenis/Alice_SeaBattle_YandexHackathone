@@ -132,8 +132,27 @@ def handle_dialog(request, response, user_storage):
                           ' координаты.')
 
         # response.set_buttons(buttons)
-        return response, user_storage
+        return response, user_storage = None:
+        
+    
+    ###DEBUG
     print(user_storage)
+    if user_storage = None:
+        user_storage = {
+            "user_id": request.user_id,
+            "humans_turn": True,
+            "life": sum(SHIPS),
+            "AliceTurns": [],
+            "Alices_matrix": ship_battle.field,
+            "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
+            "sinked_ship": [],
+            "cheating_stage": 0
+        }
+    ###DEBUG_END
+    
+    
+    
+    
     # Обрабатываем ответ пользователя.
     user_message = request.command.lower().strip().replace(' ', '')
 
