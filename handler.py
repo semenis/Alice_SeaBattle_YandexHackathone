@@ -22,6 +22,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 
+
 class NoCellsError(Exception):
     pass
 
