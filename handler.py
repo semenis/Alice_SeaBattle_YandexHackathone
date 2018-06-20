@@ -3,11 +3,11 @@
 
 """
 RU:
-Это основная чать логики навыка Алисы Морской бой
+Это основная чать логики навыка Алисы "Морской бой"
 Написана Сайдумаровым Семеном и Елизарововой Анастасией
 Переписана и избавлена от костылей(но это не точно) Дином Дмитрием
 EN:
-This is main logic of Alice skill 'Sea war'
+This is main logic of Alice skill "Sea battle"
 Writing by Saidumarov Semen and Elizarova Anastasiya
 Rewriting and removing crutches (But it is not exactly) by Din Dmitriy
 """
@@ -17,6 +17,17 @@ from json import dump
 from random import randint, choice
 from copy import deepcopy
 from re import findall, match
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+class NoCellsError(Exception):
+    pass
+
+
+class WinnerError(Exception):
+    pass
 
 
 class ShipBattle:
@@ -26,7 +37,7 @@ class ShipBattle:
         # Генерируем поле
         self.field = [[0 for _ in range(10)] for _ in range(10)]
 
-    # Вспомогательная фунция для проверки на пересечения
+    # Вспомогательная функция для проверки на пересечения
     def check_cell(self, cell, first_cell=False):
         x, y = cell
         count = 0
@@ -86,11 +97,14 @@ class ShipBattle:
 
 
 SHIPS = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
+LIFE = sum(SHIPS)
 ALPHABET = ['а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'к']
 
 KILLED_WORDS = ['убила', 'убил', 'потопила', 'потоплен', 'потопил']
 INJURED_WORDS = ['попала', 'попал', 'попадание', 'ранил', 'ранила']
 MISSED_WORDS = ['мимо', 'промах', 'промазала', 'промазал']
+CANCEL_WORD = ['отмена']
+ENDING_WORDS = ['новаяигра', 'выход']
 
 ALL_WORDS = ['убила', 'убил', 'потопила', 'потопил', 'потоплен',
              'попала', 'попал', 'попадание', 'ранил', 'ранила',
@@ -113,32 +127,36 @@ def handle_dialog(request, response, user_storage):
         # Инициализируем сессию и поприветствуем его.
         ship_battle = ShipBattle()
         ship_battle.place_ships()
-        
+
+        # place = ship_battle.field
+
         user_storage = {
             "user_id": request.user_id,
-            "humans_turn": True,
-            "life": sum(SHIPS),
-            "AliceTurns": [],
-            "Alices_matrix": ship_battle.field,
+            "users_turn": True,
+            "alice_life": LIFE,
+            "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+            "users_life": LIFE,
+            "Target": [],
+            "alices_matrix": ship_battle.field,
             "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
-            "sinked_ship": [],
-            "cheating_stage": 0
+            "cheating_stage": 0,
+            "last_turn_user": None,
+            "last_turn_alice": None,
+            "current_field": 'alices_matrix',
+            "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
 
-        # buttons, user_storage = get_suggests(user_storage)
+        # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
-                          '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали (от 1 до 10 сверху вниз). Мои корабли '
-                          'уже расставлены. По вашей готовности атакуйте. Чтобы провести атаку скажите или введите'
-                          ' координаты.')
+                          '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
+                          '(от 1 до 10 сверху вниз). Мои корабли уже расставлены. По вашей готовности атакуйте. Чтобы '
+                          'провести атаку скажите или введите координаты.'
+                          'Для отмены действия наберите "Отменить"'
+                          'Для начала новой игры наберите "Новая игра" или "Выход"')
+        # response.set_text(place)
+        # Выходим из функции и ждем ответа
+        return response, user_storage
 
-        # response.set_buttons(buttons)
-        return response, user_storage        
-    
-
-    
-    
-    
-    
     # Обрабатываем ответ пользователя.
     user_message = request.command.lower().strip().replace(' ', '')
 
@@ -146,82 +164,305 @@ def handle_dialog(request, response, user_storage):
     try_to_make_coor = ''.join(findall(r'\w+', user_message))
     matched = match('\w\d0*', try_to_make_coor)
 
-    # Проверка слова в допустимых словах
-    if user_message in ALL_WORDS:
+    try:
+        # Проверка слова в допустимых словах
+        if user_message in ALL_WORDS:
 
-        # Если ходит Алиса
-        if not user_storage["humans_turn"]:
+            # Если ходит Алиса
+            if not user_storage["users_turn"]:
 
-            # Проверка наличия слова в словах о потоплении
-            if user_message in KILLED_WORDS:
-                user_storage["humans_turn"] = False
-                response.set_text(alice_fires(user_storage["users_matrix"], killed=True))
+                # Проверка наличия слова в словах о потоплении
+                if user_message in KILLED_WORDS:
+                    alice_answer = alice_fires(user_storage, "убил")
+                    response.set_text(alice_answer)
 
-            # Проверка наличия слова в словах о попадании
-            elif user_message in INJURED_WORDS:
-                user_storage["humans_turn"] = False
-                response.set_text(alice_fires(user_storage["users_matrix"], killed=False))
+                # Проверка наличия слова в словах о попадании
+                elif user_message in INJURED_WORDS:
+                    alice_answer = alice_fires(user_storage, "ранил")
+                    response.set_text(alice_answer)
 
-            # Проверка наличия слова в словах о промахе
-            elif user_message in MISSED_WORDS:
-                user_storage["humans_turn"] = True
-                response.set_text('Ваш ход.')
+                # Проверка наличия слова в словах о промахе
+                elif user_message in MISSED_WORDS:
+                    alice_answer = alice_fires(user_storage, "мимо")
+                    response.set_text(alice_answer)
 
-        # Если игрок сказал не в свой ход
-        else:
-            response.set_text(choice(PHRASES_FOR_USERS_TURN))
+                elif user_message in CANCEL_WORD:
+                    x, y = user_storage["last_turn_alice"][0]
+                    value = user_storage["last_turn_alice"][1]
+                    x_, y_ = user_storage["last_turn_user"][0]
+                    value_ = user_storage["last_turn_user"][1]
+                    try:
+                        user_storage["current_field"][y][x] = value
+                        user_storage["current_field"][y_][x_] = value_
 
-    # Проверка на присутствие шаблона re
-    elif matched is not None:
+                        response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
+                    except:
+                        response.set_text('Невозможно отменить ход')
 
-        # Проверка, что сейчас ход игрока
-        if user_storage["humans_turn"]:
-            letter = matched.group(0)[0]
-            number = int(matched.group(0)[1:])
 
-            # Проверка корректности шаблона
-            if 0 < number < 11 and letter in ALPHABET:
-                result_of_fire = user_fires(user_storage["Alices_matrix"], (ALPHABET.index(letter), number - 1))
+                elif user_message in ENDING_WORDS:
+                    ship_battle = ShipBattle()
+                    ship_battle.place_ships()
 
-                # Анализ результата выстрела
-                if result_of_fire == 'Мимо':
-                    user_storage["humans_turn"] = False
-                    response.set_text('Мимо. Я хожу. ' + alice_fires(user_storage['users_matrix'], killed=False))
-                else:
-                    user_storage["humans_turn"] = True
-                    user_storage["life"] -= 1
-                    response.set_text(result_of_fire)
+                    user_storage = {
+                        "user_id": request.user_id,
+                        "users_turn": True,
+                        "alice_life": LIFE,
+                        "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+                        "users_life": LIFE,
+                        "Target": [],
+                        "alices_matrix": ship_battle.field,
+                        "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
+                        "cheating_stage": 0,
+                        "last_turn_user": None,
+                        "last_turn_alice": None,
+                        "current_field": 'alices_matrix',
+                        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
+                    }
 
-            # Если не корректный ввод
+                    # Приветствие
+                    response.set_text(
+                        'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
+                        '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
+                        '(от 1 до 10 сверху вниз). Мои корабли уже расставлены. По вашей готовности атакуйте. Чтобы '
+                        'провести атаку скажите или введите координаты.'
+                        'Для отмены действия наберите "Отменить"'
+                        'Для начала новой игры наберите "Новая игра" или "Выход"')
+
+            # Если игрок сказал не в свой ход
             else:
-                response.set_text("Координаты клетки обозначаются буквой (от А до К, исключая Ё и Й) и числом (от 1 до 10) для поля "
-                                  "10 на 10 клеток. Пример - А1.")
+                response.set_text(choice(PHRASES_FOR_USERS_TURN))
 
-        # Если ход Алисы
+        # Проверка на присутствие шаблона re
+        elif matched is not None:
+
+            # Проверка, что сейчас ход игрока
+            if user_storage["users_turn"]:
+                letter = matched.group(0)[0]
+                number = int(matched.group(0)[1:])
+
+                # Проверка корректности шаблона
+                if 0 < number < 11 and letter in ALPHABET:
+                    result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
+                    user_storage["last_turn_user"] = [(ALPHABET.index(letter), number - 1),
+                                                      user_storage["alices_matrix"][number - 1][ALPHABET.index(letter)]]
+                    user_storage["last_turn_alice"] = [(ALPHABET.index(letter), number - 1),
+                                                       user_storage["alices_matrix"][number - 1][ALPHABET.index(letter)]]
+
+                    # Анализ результата выстрела
+                    if result_of_fire == 'Мимо':
+                        user_storage["current_field"] = 'users_matrix'
+                        user_storage["users_turn"] = False
+                        alice_answer = alice_fires(user_storage, "remember")
+                        response.set_text('Мимо. Я хожу. ' + alice_answer)
+                    else:
+                        user_storage["alice_life"] -= 1
+                        if user_storage["alice_life"] < 1:
+                            response.set_text("Вы победили меня, поздравляю! Спасибо за игру!")
+                            response.end()
+                        else:
+                            response.set_text(result_of_fire)
+
+                # Если не корректный ввод
+                else:
+                    response.set_text(
+                        "Координаты клетки обозначаются буквой (от А до К, исключая Ё и Й) "
+                        "и числом (от 1 до 10) для поля 10 на 10 клеток. Пример - А1.")
+
+            # Если ход Алисы
+            else:
+                response.set_text(choice(PHRASES_FOR_ALICES_TURN))
+
+        # Если ничему не соответствует
         else:
-            response.set_text(choice(PHRASES_FOR_ALICES_TURN))
+            response.set_text("Простите, но я вас не поняла.")
 
-    # Если ничему не соответствует
-    else:
-        response.set_text("Простите, но я вас не поняла.")
+    # Выходы из рекурсии
+    except NoCellsError:
+        response.set_text("Я простреляла все клетки, так что считайте, что я победила.")
+        response.end()
+
+    except WinnerError:
+        response.set_text("Я выиграла, спасибо за игру!")
+        response.end()
 
     # В любом случае
     return response, user_storage
 
 
-# Алгоритмический интеллект Алисы TODO
-def alice_fires(matrix, killed=False):
-    # TODO сделать обработку убил\ранил
-    i = 0
-    turn = [randint(0, 9), randint(0, 9)]
-    while matrix[turn[1]][turn[0]] != 0:
-        i += 1
-        turn = [randint(0, 9), randint(0, 9)]
-        if i >= 120:
-            turn = [-1, -1]
-    matrix[turn[1]][turn[0]] = 1
+# Функция, отвечающая за стрельбу Алисы
+def alice_fires(user_data, happened):
 
-    return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)
+    # Рандомный выстрел
+    def random_fire():
+        cells_for_fire = []  # Список доступных клеток
+        for _y in range(10):  # Поле 10 на 10
+            for _x in range(10):
+                # Пустая ли клетка
+                if user_data["users_matrix"][_y][_x] == 0:
+                    cells_for_fire.append((_x, _y))  # Добавляем в список возможных клеток
+        # Проверка, на то, что еще остались пустые клетки
+        if len(cells_for_fire) == 0:
+            raise NoCellsError
+
+        turn = choice(cells_for_fire)  # Рандомно берем
+        user_data["last_turn_alice"] = [(ALPHABET.index(turn[0]), turn[1]), user_data["alices_matrix"][turn[1]][ALPHABET.index(turn[0])]]
+
+        return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
+
+    # Умный выстрел (с учетом предыдущих выстрелов для подбитого корабля)
+    def clever_fire():
+
+        # k_kill = [4,3,2,1]
+        # Если корабль поранен дважды, определяем положение корабля (горизонатльное/вертикальное)
+        if len(user_data["Target"]) > 1:
+            cell_1 = user_data["Target"][0]
+            cell_2 = user_data["Target"][1]
+
+            cells_to_del = []
+            # Если горизнтальное
+            if cell_1[0] == cell_2[0]:
+                for direction in user_data["directions"]:
+                    if direction in [(1, 0), (-1, 0)]:
+                        cells_to_del.append(direction)
+
+            # Если вертикальное
+            elif cell_1[1] == cell_2[1]:
+                for direction in user_data["directions"]:
+                    if direction in [(0, 1), (0, -1)]:
+                        cells_to_del.append(direction)
+
+            for cell_to_del in cells_to_del:
+                user_data["directions"].remove(cell_to_del)
+
+        chosen = False
+        # Выбираем клетку в которую будем стрелять
+        directions_to_del = []
+        cells_to_check = {}
+        for possible_direction in user_data["directions"]:
+            for _cell in user_data["Target"]:
+                _x = possible_direction[0] + _cell[0]
+                _y = possible_direction[1] + _cell[1]
+
+                # Проверка на попадание в поле
+                if 0 <= _x <= 9 and 0 <= _y <= 9:
+
+                    # Если клетка стрелянная удаляем напрвление из возможных в конце цикла
+                    if user_data["users_matrix"][_y][_x] == 2:
+                        directions_to_del.append(possible_direction)
+                        break
+
+                    # Если клетка не стрелянная стреляем
+                    elif user_data["users_matrix"][_y][_x] == 0:
+                        cells_to_check[(_x, _y)] = possible_direction
+                        chosen = True
+
+                # Если клетка не попадает в поле удаляем из возможных в конце цикла
+                else:
+                    directions_to_del.append(possible_direction)
+
+            # Цикл для удаления возможных клеток
+            for direction in directions_to_del:
+                try:
+                    user_data["directions"].remove(direction)
+                except ValueError:
+                    pass
+
+        if chosen:
+            logging.info("cells to check: {}".format(cells_to_check))
+            logging.info("possible_directions: {}".format(user_data["directions"]))
+            for _cell in cells_to_check:
+                if cells_to_check[_cell] in user_data["directions"]:
+                    x, y = _cell
+                    user_data["last_turn_alice"] = [_cell, 0]
+                    return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
+
+        elif not chosen and not user_data["directions"]:
+            user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+            try_fire = random_fire()
+            user_data["users_life"] -= 1
+            try:
+                user_data["alice_ships"].remove(len(user_data["Target"]))
+            except Exception as e:
+                user_data["cheating_stage"] += 1
+                return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
+            user_data["Target"] = []
+            return "Судя по всему, корабль уже потоплен. " + try_fire
+
+    if happened == "убил" or happened == "ранил":
+
+        user_data["users_life"] -= 1
+        if user_data["users_life"] < 1:
+            raise WinnerError
+
+    if happened == "убил":
+        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
+
+        user_data["Target"].append(user_data["last_turn_alice"][0])  # Добавим клетку, чтобы в цикле она тоже отметилась
+        user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # Обновляем возможные клетки
+        for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
+            x, y = cell  # Достаем координаты
+
+            # Возможные клетки
+            possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
+            for possible in possible_cells:
+                # Проверка на вхождение в поле
+                if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
+                    # Отмечаем данную клетку
+                    user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
+
+        # Опустошаем спискок, отвечающего за подбитый корабль
+        user_data["Target"] = []
+        answer = random_fire()
+
+    elif happened == "ранил":
+        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
+
+        # Добаляем клетку в список корабля
+        user_data["Target"].append(user_data["last_turn_alice"][0])
+
+        # Отмечаем прошлый выстрел в матрице
+        x, y = user_data["last_turn_alice"][0]
+        user_data["users_matrix"][y][x] = 3
+
+        answer = clever_fire()
+
+    elif happened == "remember":
+        if user_data["Target"]:  # Если есть раненый корабль
+            answer = clever_fire()
+        else:
+            answer = random_fire()
+
+    else:
+        # Переключаем на ход игрока
+        user_data["users_turn"] = True
+        user_data["current_field"] = 'alices_matrix'
+
+        # Выставление стрелянной клетки на поле
+        x, y = user_data["last_turn_alice"][0]
+        user_data["users_matrix"][y][x] = 2
+
+        # Инкримент к жульничеству
+        user_data["cheating_stage"] += 1
+
+        answer = 'Ваш ход.'
+        # Замечания для жуликов
+        if user_data["cheating_stage"] == 10:
+            answer = 'Что-то мне не везет. Ваш ход.'
+        elif user_data["cheating_stage"] == 20:
+            answer = 'По теории вероятности я уже должна была попасть хотя бы раз. Ваш ход.'
+        elif user_data["cheating_stage"] == 40:
+            answer = 'Мне кажется, что вы играете не совсем честно.'
+        elif user_data["cheating_stage"] == 60:
+            answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
+        elif user_data["cheating_stage"] == 80:
+            answer = 'Роботы в отличае от людей не умеют обманывать.'
+        elif user_data["cheating_stage"] == 97:
+            answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
+                     'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
+
+    user_data["last_turn_user"] = [user_data["last_turn_alice"][0], 0]
+    return answer
 
 
 # Обработка огня игрока
@@ -240,22 +481,35 @@ def user_fires(matrix, coord):
         # Волновой
         ship = [(x, y)]
         was = []
+
         while len(ship) > 0:
             sinking = True
+
             x, y = ship.pop(0)
             was.append((x, y))
+
+            # Плюс, потому что корабли в виде линий
             possible_cells = [(0, 1), (1, 0), (-1, 0), (0, -1)]
 
+            # Проходим по возможным клеткам
             for possible in possible_cells:
+                # Попадают ли клетка в поле
                 if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
+
+                    # Проходилась ли клетка
                     if (x + possible[0], y + possible[1]) not in was:
+
+                        # Если в клетке 3
                         if matrix[y + possible[1]][x + possible[0]] == 3:
                             ship.append((x + possible[0], y + possible[1]))
+
+                        # Если в клетке 1
                         elif matrix[y + possible[1]][x + possible[0]] == 1:
                             sinking = False
                             break
+
             if sinking:
-                for cell in was:
+                for cell in was:  # Проходимся по клеткам корабля
                     matrix[cell[1]][cell[0]] = 2
                 output = 'Потоплен'
             else:
