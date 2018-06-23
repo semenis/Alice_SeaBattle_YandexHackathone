@@ -260,7 +260,7 @@ def handle_dialog(request, response, user_storage):
                         user_storage["alice_life"] -= 1
                         if user_storage["alice_life"] < 1:
                             response.set_text("Вы победили меня, поздравляю! Спасибо за игру!")
-                            response.end()
+                            response.end(request)
                         else:
                             response.set_text(result_of_fire)
 
@@ -281,11 +281,11 @@ def handle_dialog(request, response, user_storage):
     # Выходы из рекурсии
     except NoCellsError:
         response.set_text("Я простреляла все клетки, так что считайте, что я победила.")
-        response.end()
+        response.end(request)
 
     except WinnerError:
         response.set_text("Я выиграла, спасибо за игру!")
-        response.end()
+        response.end(request)
 
     # В любом случае
     return response, user_storage
