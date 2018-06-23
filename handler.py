@@ -384,12 +384,12 @@ def alice_fires(user_data, happened):
             user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]
             try_fire = random_fire()
             print(user_data["alice_ships"])
-            try:
-                # Target - список с координатами подбитых клеток текущего корабля
-                user_data["alice_ships"].remove(len(user_data["Target"]))
-            except ValueError:
-                user_data["cheating_stage"] += 1
-                return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
+            # try:
+            #     # Target - список с координатами подбитых клеток текущего корабля
+            #     user_data["alice_ships"].remove(len(user_data["Target"]))
+            # except ValueError:
+            #     user_data["cheating_stage"] += 1
+            #     return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
             user_data["Target"] = []
             return "Судя по всему, корабль уже потоплен. " + try_fire
 
@@ -412,7 +412,12 @@ def alice_fires(user_data, happened):
                 if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
                     # Отмечаем данную клетку
                     user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
-        user_data["alice_ships"].remove(len(user_data["Target"]))
+        try:
+            # Target - список с координатами подбитых клеток текущего корабля
+            user_data["alice_ships"].remove(len(user_data["Target"]))
+        except ValueError:
+            user_data["cheating_stage"] += 1
+            return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
         # Опустошаем спискок, отвечающего за подбитый корабль
         user_data["Target"] = []
         answer = random_fire()
