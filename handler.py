@@ -378,7 +378,7 @@ def alice_fires(user_data, happened):
                     user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
-        elif not chosen:
+        else:
             user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]
             try_fire = random_fire()
             print(user_data["alice_ships"])
