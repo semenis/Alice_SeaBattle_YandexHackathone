@@ -397,74 +397,74 @@ def alice_fires(user_data, happened):
         if user_data["users_life"] < 1:
             raise WinnerError
 
-    if happened == "убил":
-        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
+        if happened == "убил":
+            user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
 
-        user_data["Target"].append(user_data["last_turn_alice"][0])  # Добавим клетку, чтобы в цикле она тоже отметилась
-        user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # Обновляем возможные клетки
-        for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
-            x, y = cell  # Достаем координаты
+            user_data["Target"].append(user_data["last_turn_alice"][0])  # Добавим клетку, чтобы в цикле она тоже отметилась
+            user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # Обновляем возможные клетки
+            for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
+                x, y = cell  # Достаем координаты
 
-            # Возможные клетки
-            possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
-            for possible in possible_cells:
-                # Проверка на вхождение в поле
-                if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
-                    # Отмечаем данную клетку
-                    user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
+                # Возможные клетки
+                possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
+                for possible in possible_cells:
+                    # Проверка на вхождение в поле
+                    if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
+                        # Отмечаем данную клетку
+                        user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
 
-        # Опустошаем спискок, отвечающего за подбитый корабль
-        user_data["Target"] = []
-        answer = random_fire()
-
-    elif happened == "ранил":
-        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
-
-        # Добаляем клетку в список корабля
-        user_data["Target"].append(user_data["last_turn_alice"][0])
-
-        # Отмечаем прошлый выстрел в матрице
-        x, y = user_data["last_turn_alice"][0]
-        user_data["users_matrix"][y][x] = 3
-
-        answer = clever_fire()
-
-    elif happened == "remember":
-        if user_data["Target"]:  # Если есть раненый корабль
-            answer = clever_fire()
-        else:
+            # Опустошаем спискок, отвечающего за подбитый корабль
+            user_data["Target"] = []
             answer = random_fire()
 
-    else:
-        # Переключаем на ход игрока
-        user_data["users_turn"] = True
-        user_data["current_field"] = 'alices_matrix'
+        elif happened == "ранил":
+            user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
 
-        # Выставление стрелянной клетки на поле
-        x, y = user_data["last_turn_alice"][0]
-        user_data["users_matrix"][y][x] = 2
+            # Добаляем клетку в список корабля
+            user_data["Target"].append(user_data["last_turn_alice"][0])
 
-        # Инкримент к жульничеству
-        user_data["cheating_stage"] += 1
+            # Отмечаем прошлый выстрел в матрице
+            x, y = user_data["last_turn_alice"][0]
+            user_data["users_matrix"][y][x] = 3
 
-        answer = 'Ваш ход.'
-        # Замечания для жуликов
-        if user_data["cheating_stage"] == 10:
-            answer = 'Что-то мне не везет. Ваш ход.'
-        elif user_data["cheating_stage"] == 20:
-            answer = 'По теории вероятности я уже должна была попасть хотя бы раз. Ваш ход.'
-        elif user_data["cheating_stage"] == 40:
-            answer = 'Мне кажется, что вы играете не совсем честно.'
-        elif user_data["cheating_stage"] == 60:
-            answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
-        elif user_data["cheating_stage"] == 80:
-            answer = 'Роботы в отличае от людей не умеют обманывать.'
-        elif user_data["cheating_stage"] == 97:
-            answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
-                     'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
+            answer = clever_fire()
 
-    user_data["last_turn_user"] = [user_data["last_turn_alice"][0], 0]
-    return answer
+        elif happened == "remember":
+            if user_data["Target"]:  # Если есть раненый корабль
+                answer = clever_fire()
+            else:
+                answer = random_fire()
+
+        else:
+            # Переключаем на ход игрока
+            user_data["users_turn"] = True
+            user_data["current_field"] = 'alices_matrix'
+
+            # Выставление стрелянной клетки на поле
+            x, y = user_data["last_turn_alice"][0]
+            user_data["users_matrix"][y][x] = 2
+
+            # Инкримент к жульничеству
+            user_data["cheating_stage"] += 1
+
+            answer = 'Ваш ход.'
+            # Замечания для жуликов
+            if user_data["cheating_stage"] == 10:
+                answer = 'Что-то мне не везет. Ваш ход.'
+            elif user_data["cheating_stage"] == 20:
+                answer = 'По теории вероятности я уже должна была попасть хотя бы раз. Ваш ход.'
+            elif user_data["cheating_stage"] == 40:
+                answer = 'Мне кажется, что вы играете не совсем честно.'
+            elif user_data["cheating_stage"] == 60:
+                answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
+            elif user_data["cheating_stage"] == 80:
+                answer = 'Роботы в отличае от людей не умеют обманывать.'
+            elif user_data["cheating_stage"] == 97:
+                answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
+                         'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
+
+        user_data["last_turn_user"] = [user_data["last_turn_alice"][0], 0]
+        return answer
 
 
 # Обработка огня игрока
