@@ -378,13 +378,14 @@ def alice_fires(user_data, happened):
                     user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
-        elif not chosen and not user_data["directions"]:
+        elif not chosen:
             user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]
             try_fire = random_fire()
-            user_data["users_life"] -= 1
+            print(user_data["alice_ships"])
             try:
+                # Target - список с координатами подбитых клеток текущего корабля
                 user_data["alice_ships"].remove(len(user_data["Target"]))
-            except Exception as e:
+            except ValueError:
                 user_data["cheating_stage"] += 1
                 return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
             user_data["Target"] = []
