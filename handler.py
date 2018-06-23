@@ -307,7 +307,7 @@ def alice_fires(user_data, happened):
             raise NoCellsError
 
         turn = choice(cells_for_fire)  # Рандомно берем
-        user_data["last_turn_alice"] = [(ALPHABET.index(turn[0]), turn[1]), user_data["alices_matrix"][turn[1]][ALPHABET.index(turn[0])]]
+        user_data["last_turn_alice"] = [(turn[0], turn[1]), user_data["alices_matrix"][turn[1]][turn[0]]]
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
 
