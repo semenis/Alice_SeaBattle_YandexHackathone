@@ -369,6 +369,8 @@ def alice_fires(user_data, happened):
                 except ValueError:
                     pass
 
+        print(chosen)
+
         if chosen:
             logging.info("cells to check: {}".format(cells_to_check))
             logging.info("possible_directions: {}".format(user_data["directions"]))
