@@ -39,14 +39,7 @@ class AliceResponse(object):
             }
         }
         
-    def end(self, alice_request):
-        self._response_dict = {
-            "version": alice_request.version,
-            "session": alice_request.session,
-            "response": {
-                "end_session": True
-            }
-        }
+
     def dumps(self):
         return json.dumps(
             self._response_dict,
