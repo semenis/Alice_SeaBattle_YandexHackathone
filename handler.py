@@ -412,6 +412,7 @@ def alice_fires(user_data, happened):
                 if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
                     # Отмечаем данную клетку
                     user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
+        user_data["alice_ships"].remove(len(user_data["Target"]))
         # Опустошаем спискок, отвечающего за подбитый корабль
         user_data["Target"] = []
         answer = random_fire()
