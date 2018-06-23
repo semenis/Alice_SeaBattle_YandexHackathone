@@ -188,8 +188,8 @@ def handle_dialog(request, response, user_storage):
 
                 elif user_message in CANCEL_WORD:
                     try:
-                        user_storage["alices_matrix"] = user_storage[0]
-                        user_storage["users_matrix"] = user_storage[1]
+                        user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
+                        user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                         print(user_storage["users_matrix"])
                         print(user_storage["alices_matrix"])
                         response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
