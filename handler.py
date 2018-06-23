@@ -102,7 +102,7 @@ LIFE = sum(SHIPS)
 ALPHABET = ['а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'к']
 
 KILLED_WORDS = ['убила', 'убил', 'потопила', 'потоплен', 'потопил']
-INJURED_WORDS = ['попала', 'попал', 'попадание', 'ранил', 'ранила']
+INJURED_WORDS = ['попала', 'попал', 'попадание', 'ранил', 'ранила', 'ранен']
 MISSED_WORDS = ['мимо', 'промах', 'промазала', 'промазал']
 CANCEL_WORD = ['отмена', 'отменить', 'отменитьход', 'назад']
 ENDING_WORDS = ['новаяигра', 'выход']
@@ -199,34 +199,7 @@ def handle_dialog(request, response, user_storage):
 
                 elif user_message in ENDING_WORDS:
                     # TODO сделать функцию end для корректного выхода из игры
-                    ship_battle = ShipBattle()
-                    ship_battle.place_ships()
-
-                    user_storage = {
-                        "user_id": request.user_id,
-                        "users_turn": True,
-                        "alice_life": LIFE,
-                        "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
-                        "users_life": LIFE,
-                        "Target": [],
-                        "alices_matrix": ship_battle.field,
-                        "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
-                        "cheating_stage": 0,
-                        "last_turn_user": None,
-                        "last_turn_alice": None,
-                        "last_turn_field": [],
-                        "current_field": 'alices_matrix',
-                        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
-                    }
-
-                    # Приветствие
-                    response.set_text(
-                        'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
-                        '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
-                        '(от 1 до 10 сверху вниз). Мои корабли уже расставлены. По вашей готовности атакуйте. Чтобы '
-                        'провести атаку скажите или введите координаты.'
-                        'Для отмены действия наберите "Отменить"'
-                        'Для начала новой игры наберите "Новая игра" или "Выход"')
+                    user_storage = end(request, response)
 
             # Если игрок сказал не в свой ход
             else:
@@ -280,11 +253,11 @@ def handle_dialog(request, response, user_storage):
     # Выходы из рекурсии
     except NoCellsError:
         response.set_text("Я простреляла все клетки, так что считайте, что я победила.")
-        response.end()
+        user_storage = end(request, response)
 
     except WinnerError:
         response.set_text("Я выиграла, спасибо за игру!")
-        response.end()
+        user_storage = end(request, response)
 
     # В любом случае
     return response, user_storage
@@ -392,7 +365,7 @@ def alice_fires(user_data, happened):
             #     user_data["cheating_stage"] += 1
             #     return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
             user_data["Target"] = []
-            return "Судя по всему, корабль уже потоплен. " + try_fire
+            return "Судя по всему, эта клетка уже подбита. " + try_fire
 
     if happened == "убил" or happened == "ранил":
 
@@ -421,7 +394,7 @@ def alice_fires(user_data, happened):
             user_data["cheating_stage"] += 1
             print(user_data["users_matrix"])
             print(user_data["alices_matrix"])
-            return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
+            return "Судя по всему, эта клетка уже подбита. Отменить ход или начать игру заново?"
         # Опустошаем спискок, отвечающего за подбитый корабль
         user_data["Target"] = []
         answer = random_fire()
@@ -519,3 +492,35 @@ def user_fires(matrix, coord):
                 output = 'Ранен'
 
     return output
+
+def end(request, response):
+    ship_battle = ShipBattle()
+    ship_battle.place_ships()
+
+    user_storage = {
+        "user_id": request.user_id,
+        "users_turn": True,
+        "alice_life": LIFE,
+        "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+        "users_life": LIFE,
+        "Target": [],
+        "alices_matrix": ship_battle.field,
+        "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
+        "cheating_stage": 0,
+        "last_turn_user": None,
+        "last_turn_alice": None,
+        "last_turn_field": [],
+        "current_field": 'alices_matrix',
+        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
+    }
+
+    # Приветствие
+    response.set_text(
+        'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
+        '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
+        '(от 1 до 10 сверху вниз). Мои корабли уже расставлены. По вашей готовности атакуйте. Чтобы '
+        'провести атаку скажите или введите координаты.'
+        'Для отмены действия наберите "Отменить"'
+        'Для начала новой игры наберите "Новая игра" или "Выход"')
+
+    return user_storage
