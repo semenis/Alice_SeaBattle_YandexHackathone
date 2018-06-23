@@ -141,6 +141,7 @@ def handle_dialog(request, response, user_storage):
             "cheating_stage": 0,
             "last_turn_user": None,
             "last_turn_alice": None,
+            "last_turn_field": [],
             "current_field": 'alices_matrix',
             "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
@@ -186,14 +187,11 @@ def handle_dialog(request, response, user_storage):
                     response.set_text(alice_answer)
 
                 elif user_message in CANCEL_WORD:
-                    x, y = user_storage["last_turn_alice"][0]
-                    value = user_storage["last_turn_alice"][1]
-                    x_, y_ = user_storage["last_turn_user"][0]
-                    value_ = user_storage["last_turn_user"][1]
                     try:
-                        user_storage["current_field"][y][x] = value
-                        user_storage["current_field"][y_][x_] = value_
-
+                        user_storage["alices_matrix"] = user_storage[0]
+                        user_storage["users_matrix"] = user_storage[1]
+                        print(user_storage["users_matrix"])
+                        print(user_storage["alices_matrix"])
                         response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
                     except:
                         response.set_text('Невозможно отменить ход')
@@ -216,6 +214,7 @@ def handle_dialog(request, response, user_storage):
                         "cheating_stage": 0,
                         "last_turn_user": None,
                         "last_turn_alice": None,
+                        "last_turn_field": [],
                         "current_field": 'alices_matrix',
                         "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
                     }
@@ -243,6 +242,7 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка корректности шаблона
                 if 0 < number < 11 and letter in ALPHABET:
+                    user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
                     result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
                     user_storage["last_turn_user"] = [(ALPHABET.index(letter), number - 1),
                                                       user_storage["alices_matrix"][number - 1][ALPHABET.index(letter)]]
@@ -306,6 +306,7 @@ def alice_fires(user_data, happened):
             raise NoCellsError
 
         turn = choice(cells_for_fire)  # Рандомно берем
+        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["last_turn_alice"] = [(turn[0], turn[1]), user_data["alices_matrix"][turn[1]][turn[0]]]
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
@@ -376,6 +377,7 @@ def alice_fires(user_data, happened):
             for _cell in cells_to_check:
                 if cells_to_check[_cell] in user_data["directions"]:
                     x, y = _cell
+                    user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
                     user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
@@ -400,6 +402,7 @@ def alice_fires(user_data, happened):
 
     if happened == "убил":
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
+        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["Target"].append(user_data["last_turn_alice"][0])  # Добавим клетку, чтобы в цикле она тоже отметилась
         user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # Обновляем возможные клетки
         for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
@@ -416,11 +419,14 @@ def alice_fires(user_data, happened):
             user_data["alice_ships"].remove(len(user_data["Target"]))
         except ValueError:
             user_data["cheating_stage"] += 1
+            print(user_data["users_matrix"])
+            print(user_data["alices_matrix"])
             return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
         # Опустошаем спискок, отвечающего за подбитый корабль
         user_data["Target"] = []
         answer = random_fire()
     elif happened == "ранил":
+        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
         # Добаляем клетку в список корабля
         user_data["Target"].append(user_data["last_turn_alice"][0])
@@ -435,6 +441,7 @@ def alice_fires(user_data, happened):
             answer = random_fire()
     else:
         # Переключаем на ход игрока
+        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["users_turn"] = True
         user_data["current_field"] = 'alices_matrix'
         # Выставление стрелянной клетки на поле
