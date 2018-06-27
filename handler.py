@@ -130,7 +130,7 @@ def handle_dialog(request, response, user_storage):
             "user_id": request.user_id,
             "users_turn": True,
             "alice_life": LIFE,
-            "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+            "users_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
             "users_life": LIFE,
             "Target": [],  # список с координатами подбитых клеток текущего корабля
             "alices_matrix": ship_battle.field,
@@ -186,7 +186,8 @@ def handle_dialog(request, response, user_storage):
                         user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
                         user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                         response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
-                    except:
+                        user_storage["last_turn_field"] = []
+                    except IndexError:
                         response.set_text('Невозможно отменить ход')
 
                 # Проверка наличия слова в словах о начале игры
@@ -331,29 +332,40 @@ def alice_fires(user_data, happened):
                     pass
 
         if chosen:
-            logging.info("cells to check: {}".format(cells_to_check))
-            logging.info("possible_directions: {}".format(user_data["directions"]))
             for _cell in cells_to_check:
                 if cells_to_check[_cell] in user_data["directions"]:
                     x, y = _cell
                     user_data['last_turn'] = _cell
-                    
+
                     user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
         elif not chosen and not user_data["directions"]:
             user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]
             try_fire = random_fire()
-            user_data["users_life"] -= 1
-            try:
-                user_data["alice_ships"].remove(len(user_data["Target"]))
-            except Exception as e:
-                user_data["cheating_stage"] += 1
-                return "Судя по всему, такого корабля не существует. Отменить ход или начать игру заново?"
-            user_data["Target"] = []
             return "Судя по всему, корабль уже потоплен. " + try_fire
 
+    def delete_ship():
+        for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
+            x, y = cell  # Достаем координаты
+            # Возможные клетки
+            possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
+            for possible in possible_cells:
+                # Проверка на вхождение в поле
+                if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
+                    # Отмечаем данную клетку
+                    user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
+        user_data["users_ships"].remove(len(user_data["Target"]))
+        user_data["Target"] = []
+        user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные направления
+
     if happened == "убил" or happened == "ранил":
+        # Проверка на жульничество. Если у пользователя корабль больше 4-х палубного или количество кораблей
+        # определённой длины больше фиксированного
+        if not (len(user_data["Target"]) + 1 in user_data["users_ships"]):
+            delete_ship()
+            return "Максимальный размер корабля на данный момент {} клетки. ".format(max(user_data["users_ships"]))
+
         user_data["users_life"] -= 1
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
 
@@ -362,30 +374,8 @@ def alice_fires(user_data, happened):
 
     if happened == "убил":
         user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
-        user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные клетки
-        
         user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
-        for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
-            x, y = cell  # Достаем координаты
-
-            # Возможные клетки
-            possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
-            for possible in possible_cells:
-                # Проверка на вхождение в поле
-                if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
-                    # Отмечаем данную клетку
-                    user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
-
-        # Проверка на жульничество. Если у пользователя корабль больше 4-х палубного или
-        # количество кораблей определённой длины больше фиксированного
-        try:
-            user_data["alice_ships"].remove(len(user_data["Target"]))
-        except ValueError:
-            user_data["cheating_stage"] += 1
-            return "Судя по всему, эта клетка уже подбита. Отменить ход или начать игру заново?"
-        
-        # Опустошаем спискок, отвечающего за подбитый корабль
-        user_data["Target"] = []
+        delete_ship()
         answer = random_fire()
 
     elif happened == "ранил":
@@ -426,8 +416,6 @@ def alice_fires(user_data, happened):
         elif user_data["cheating_stage"] == 60:
             answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
         elif user_data["cheating_stage"] == 80:
-            answer = 'Роботы в отличае от людей не умеют обманывать.'
-        elif user_data["cheating_stage"] == 97:
             answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
                      'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
 
@@ -486,6 +474,7 @@ def user_fires(matrix, coord):
 
     return output
 
+
 # Начало новой игры
 def end(request, response):
     ship_battle = ShipBattle()
@@ -495,7 +484,7 @@ def end(request, response):
         "user_id": request.user_id,
         "users_turn": True,
         "alice_life": LIFE,
-        "alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+        "users_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
         "users_life": LIFE,
         "Target": [],
         "alices_matrix": ship_battle.field,
