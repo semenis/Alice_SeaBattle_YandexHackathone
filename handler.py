@@ -336,6 +336,8 @@ def alice_fires(user_data, happened):
             for _cell in cells_to_check:
                 if cells_to_check[_cell] in user_data["directions"]:
                     x, y = _cell
+                    user_data['last_turn'] = _cell
+                    
                     user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
@@ -353,14 +355,16 @@ def alice_fires(user_data, happened):
 
     if happened == "убил" or happened == "ранил":
         user_data["users_life"] -= 1
+        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
+
         if user_data["users_life"] < 1:
             raise WinnerError
 
     if happened == "убил":
-        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
         user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
-        user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
         user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные клетки
+        
+        user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
         for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
             x, y = cell  # Достаем координаты
 
@@ -379,13 +383,12 @@ def alice_fires(user_data, happened):
         except ValueError:
             user_data["cheating_stage"] += 1
             return "Судя по всему, эта клетка уже подбита. Отменить ход или начать игру заново?"
+        
         # Опустошаем спискок, отвечающего за подбитый корабль
         user_data["Target"] = []
         answer = random_fire()
 
     elif happened == "ранил":
-        user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
-
         # Добаляем клетку в список корабля
         user_data["Target"].append(user_data["last_turn"])
 
