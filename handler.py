@@ -138,10 +138,7 @@ def handle_dialog(request, response, user_storage):
             "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
             "cheating_stage": 0,
             "last_turn": None,
-            "last_turn_field": [],
-            "last_alice_life": LIFE,
-            "last_alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
-            "last_users_life": LIFE,
+            # "last_turn_field": [],
             "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
 
@@ -174,11 +171,10 @@ def handle_dialog(request, response, user_storage):
             if user_message in CANCEL_WORD:
                 try:
                     user_storage = backup_turn
-                    user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
-                    user_storage["users_matrix"] = user_storage["last_turn_field"][1]
+                    # user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
+                    # user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
                 except Exception as e:
-                    print(e)
                     response.set_text('Невозможно отменить ход')
 
             # Проверка наличия слова в словах о начале игры
@@ -219,7 +215,7 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка корректности шаблона
                 if 0 < number < 11 and letter in ALPHABET:
-                    user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
+                    # user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
                     result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
 
                     # Анализ результата выстрела
@@ -279,7 +275,7 @@ def alice_fires(user_data, happened):
 
         turn = choice(cells_for_fire)  # Рандомно берем
         # Сохраняем поля Алисы и пользователя до обработки выстрела
-        user_data["last_turn_field"][0] = user_data["alices_matrix"]
+        # user_data["last_turn_field"][0] = user_data["alices_matrix"]
         user_data["last_turn"] = turn
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
@@ -347,7 +343,7 @@ def alice_fires(user_data, happened):
             for _cell in cells_to_check:
                 if cells_to_check[_cell] in user_data["directions"]:
                     user_data["last_turn"] = _cell
-                    user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+                    # user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
         else:
@@ -363,7 +359,7 @@ def alice_fires(user_data, happened):
 
     if happened == "убил":
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+        # user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
         user_data["directions"] = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # Обновляем возможные клетки
         for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
@@ -407,7 +403,7 @@ def alice_fires(user_data, happened):
             answer = random_fire()
     else:
         # Переключаем на ход игрока
-        user_data["last_turn_field"][1] = user_data["users_matrix"]
+        # user_data["last_turn_field"][1] = user_data["users_matrix"]
         user_data["users_turn"] = True
 
         # Выставление стрелянной клетки на поле
@@ -504,10 +500,7 @@ def end(request, response):
         "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
         "cheating_stage": 0,
         "last_turn": None,
-        "last_turn_field": [],
-        "last_alice_life": LIFE,
-        "last_alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
-        "last_users_life": LIFE,
+        # "last_turn_field": [],
         "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
     }
 
