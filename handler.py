@@ -175,7 +175,8 @@ def handle_dialog(request, response, user_storage):
                     user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
                     user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
-                except:
+                except Exception as e:
+                    print(e)
                     response.set_text('Невозможно отменить ход')
 
             # Проверка наличия слова в словах о начале игры
