@@ -147,6 +147,8 @@ def handle_dialog(request, response, user_storage):
 
         backup_turn = user_storage
 
+        global backup_turn
+
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
                           '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
