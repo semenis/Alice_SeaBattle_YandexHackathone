@@ -139,8 +139,13 @@ def handle_dialog(request, response, user_storage):
             "cheating_stage": 0,
             "last_turn": None,
             "last_turn_field": [],
+            "last_alice_life": LIFE,
+            "last_alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+            "last_users_life": LIFE,
             "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
+
+        backup_turn = user_storage
 
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
@@ -166,6 +171,7 @@ def handle_dialog(request, response, user_storage):
             # Проверка наличия слова в словах об отемене хода
             if user_message in CANCEL_WORD:
                 try:
+                    user_storage = backup_turn
                     user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
                     user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
@@ -178,6 +184,8 @@ def handle_dialog(request, response, user_storage):
 
             # Если ходит Алиса
             elif not user_storage["users_turn"]:
+
+                backup_turn = user_storage
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
@@ -494,8 +502,13 @@ def end(request, response):
         "cheating_stage": 0,
         "last_turn": None,
         "last_turn_field": [],
+        "last_alice_life": LIFE,
+        "last_alice_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+        "last_users_life": LIFE,
         "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
     }
+
+    backup_turn = user_storage
 
     response.set_text(
         'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
