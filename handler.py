@@ -145,9 +145,9 @@ def handle_dialog(request, response, user_storage):
             "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
 
-        backup_turn = user_storage
-
         global backup_turn
+
+        backup_turn = user_storage
 
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
