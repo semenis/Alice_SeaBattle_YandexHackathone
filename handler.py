@@ -268,7 +268,7 @@ def alice_fires(user_data, happened):
 
         turn = choice(cells_for_fire)  # Рандомно берем
         # Сохраняем поля Алисы и пользователя до обработки выстрела
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+        user_data["last_turn_field"][0] = user_data["alices_matrix"]
         user_data["last_turn"] = turn
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
@@ -396,7 +396,7 @@ def alice_fires(user_data, happened):
             answer = random_fire()
     else:
         # Переключаем на ход игрока
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+        user_data["last_turn_field"][1] = user_data["users_matrix"]
         user_data["users_turn"] = True
 
         # Выставление стрелянной клетки на поле
