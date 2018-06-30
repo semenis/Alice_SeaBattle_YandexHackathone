@@ -142,9 +142,10 @@ def handle_dialog(request, response, user_storage):
             "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
         }
 
-        global backup_turn
+        global backup_turn, last_answer
 
         backup_turn = user_storage
+        last_answer = None
 
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
@@ -171,7 +172,8 @@ def handle_dialog(request, response, user_storage):
             if user_message in CANCEL_WORD:
                 try:
                     user_storage = backup_turn
-                    user_storage["users_turn"] = not user_storage["users_turn"]
+                    if last_answer =='мимо':
+                        user_storage["users_turn"] = not user_storage["users_turn"]
                     # user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
                     # user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
@@ -190,16 +192,19 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
+                    last_answer = 'убил'
                     alice_answer = alice_fires(user_storage, "убил")
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о попадании
                 elif user_message in INJURED_WORDS:
+                    last_answer = 'ранил'
                     alice_answer = alice_fires(user_storage, "ранил")
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о промахе
                 elif user_message in MISSED_WORDS:
+                    last_answer = 'мимо'
                     alice_answer = alice_fires(user_storage, "мимо")
                     response.set_text(alice_answer)
 
