@@ -171,6 +171,7 @@ def handle_dialog(request, response, user_storage):
             if user_message in CANCEL_WORD:
                 try:
                     user_storage = backup_turn
+                    user_storage["users_turn"] = not user_storage["users_turn"]
                     # user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
                     # user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
