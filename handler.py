@@ -173,11 +173,11 @@ def handle_dialog(request, response, user_storage):
                     response.set_text('Невозможно отменить ход')
 
             # Проверка наличия слова в словах о начале игры
-            if user_message in ENDING_WORDS:
+            elif user_message in ENDING_WORDS:
                 user_storage = end(request, response)
 
             # Если ходит Алиса
-            if not user_storage["users_turn"]:
+            elif not user_storage["users_turn"]:
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
