@@ -163,6 +163,19 @@ def handle_dialog(request, response, user_storage):
         # Проверка слова в допустимых словах
         if user_message in ALL_WORDS:
 
+            # Проверка наличия слова в словах об отемене хода
+            if user_message in CANCEL_WORD:
+                try:
+                    user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
+                    user_storage["users_matrix"] = user_storage["last_turn_field"][1]
+                    response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
+                except:
+                    response.set_text('Невозможно отменить ход')
+
+            # Проверка наличия слова в словах о начале игры
+            if user_message in ENDING_WORDS:
+                user_storage = end(request, response)
+
             # Если ходит Алиса
             if not user_storage["users_turn"]:
 
@@ -180,19 +193,6 @@ def handle_dialog(request, response, user_storage):
                 elif user_message in MISSED_WORDS:
                     alice_answer = alice_fires(user_storage, "мимо")
                     response.set_text(alice_answer)
-
-                # Проверка наличия слова в словах об отемене хода
-                elif user_message in CANCEL_WORD:
-                    try:
-                        user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
-                        user_storage["users_matrix"] = user_storage["last_turn_field"][1]
-                        response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
-                    except:
-                        response.set_text('Невозможно отменить ход')
-
-                # Проверка наличия слова в словах о начале игры
-                elif user_message in ENDING_WORDS:
-                    user_storage = end(request, response)
 
             # Если игрок сказал не в свой ход
             else:
