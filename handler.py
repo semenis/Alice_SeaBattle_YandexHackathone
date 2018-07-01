@@ -389,15 +389,6 @@ def alice_fires(user_data, happened):
         user_data["users_life"] -= 1
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
 
-        if user_data["users_life"] < 1:
-            raise WinnerError
-
-    if happened == "убил":
-        user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
-        delete_ship()
-        answer = random_fire()
-
-    elif happened == "ранил":
         # Добаляем клетку в список корабля
         user_data["Target"].append(user_data["last_turn"])
 
@@ -405,6 +396,14 @@ def alice_fires(user_data, happened):
         x, y = user_data["last_turn"]
         user_data["users_matrix"][y][x] = 3
 
+        if user_data["users_life"] < 1:
+            raise WinnerError
+
+    if happened == "убил":
+        delete_ship()
+        answer = random_fire()
+
+    elif happened == "ранил":
         answer = clever_fire()
 
     elif happened == "remember":
