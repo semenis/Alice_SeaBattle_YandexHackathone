@@ -357,7 +357,14 @@ def alice_fires(user_data, happened):
                 if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
                     # Отмечаем данную клетку
                     user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
-        user_data["users_ships"].remove(len(user_data["Target"]))
+
+        try:
+            user_data["alice_ships"].remove(len(user_data["Target"]))
+        except ValueError:
+            user_data["cheating_stage"] += 5
+            return "Максимальный размер корабля на данный момент {} клетки. Отменить ход или начать игру заново?".format(
+                max(user_data["users_ships"]))
+
         user_data["Target"] = []
         user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные направления
 
@@ -366,7 +373,8 @@ def alice_fires(user_data, happened):
         # определённой длины больше фиксированного
         if not (len(user_data["Target"]) + 1 in user_data["users_ships"]):
             delete_ship()
-            return "Максимальный размер корабля на данный момент {} клетки. ".format(max(user_data["users_ships"]))
+            return "Максимальный размер корабля на данный момент {} клетки. Отменить ход или начать игру заново?".format(
+                max(user_data["users_ships"]))
 
         user_data["users_life"] -= 1
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
