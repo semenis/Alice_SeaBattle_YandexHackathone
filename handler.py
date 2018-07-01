@@ -367,7 +367,7 @@ def alice_fires(user_data, happened):
                     user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
 
         try:
-            user_data["alice_ships"].remove(len(user_data["Target"]))
+            user_data["users_ships"].remove(len(user_data["Target"]))
         except ValueError:
             user_data["cheating_stage"] += 5
             return "Максимальный размер корабля на данный момент {} клетки. Отменить ход или начать игру заново?".format(
