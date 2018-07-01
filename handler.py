@@ -4,7 +4,7 @@
 """
 RU:
 Это основная чать логики навыка Алисы "Морской бой"
-Написана Сайдумаровым Семеном и Елизарововой Анастасией
+Написана Сайдумаровым Семеном и Елизаровой Анастасией
 Переписана и избавлена от костылей(но это не точно) Дином Дмитрием
 EN:
 This is main logic of Alice skill "Sea battle"
@@ -20,7 +20,6 @@ from re import findall, match
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
 
 class NoCellsError(Exception):
     pass
@@ -106,6 +105,7 @@ MISSED_WORDS = ['мимо', 'промах', 'промазала', 'промаз�
 CANCEL_WORD = ['отмена', 'отменить', 'отменитьход', 'назад']
 ENDING_WORDS = ['новаяигра', 'выход', 'начатьновуюигру', 'начать']
 
+
 ALL_WORDS = KILLED_WORDS+INJURED_WORDS+MISSED_WORDS+CANCEL_WORD+ENDING_WORDS
 
 PHRASES_FOR_ALICES_TURN = ['Пожалуйста, не жульничайте, я контролирую игру.', 'Помоему, сейчас не ваш ход.',
@@ -141,6 +141,12 @@ def handle_dialog(request, response, user_storage):
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
 
+
+
+        global backup_turn
+
+        backup_turn = user_storage
+
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
                           '(от "А" до "К", исключая "Ё" и "Й", слева направо) и цифрой по вертикали '
@@ -162,8 +168,28 @@ def handle_dialog(request, response, user_storage):
         # Проверка слова в допустимых словах
         if user_message in ALL_WORDS:
 
+
+            # Проверка наличия слова в словах об отемене хода
+            if user_message in CANCEL_WORD:
+                try:
+                    user_storage = backup_turn
+                    user_storage["users_turn"] = False
+                    # user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
+                    # user_storage["users_matrix"] = user_storage["last_turn_field"][1]
+                    response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
+                except Exception as e:
+                    print(e)
+                    response.set_text('Невозможно отменить ход')
+
+            # Проверка наличия слова в словах о начале игры
+            elif user_message in ENDING_WORDS:
+                user_storage = end(request, response)
+
             # Если ходит Алиса
-            if not user_storage["users_turn"]:
+            elif not user_storage["users_turn"]:
+
+                backup_turn = user_storage
+
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
@@ -208,7 +234,9 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка корректности шаблона
                 if 0 < number < 11 and letter in ALPHABET:
-                    user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
+
+                    # user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
+
                     result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
 
                     # Анализ результата выстрела
@@ -268,7 +296,9 @@ def alice_fires(user_data, happened):
 
         turn = choice(cells_for_fire)  # Рандомно берем
         # Сохраняем поля Алисы и пользователя до обработки выстрела
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+
+        # user_data["last_turn_field"][0] = user_data["alices_matrix"]
+
         user_data["last_turn"] = turn
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
@@ -276,7 +306,6 @@ def alice_fires(user_data, happened):
     # Умный выстрел (с учетом предыдущих выстрелов для подбитого корабля)
     def clever_fire():
 
-        # k_kill = [4,3,2,1]
         # Если корабль поранен дважды, определяем положение корабля (горизонатльное/вертикальное)
         if len(user_data["Target"]) > 1:
             cell_1 = user_data["Target"][0]
@@ -287,12 +316,14 @@ def alice_fires(user_data, happened):
             if cell_1[0] == cell_2[0]:
                 for direction in user_data["directions"]:
                     if direction in [[1, 0], [-1, 0]]:
+
                         cells_to_del.append(direction)
 
             # Если вертикальное
             elif cell_1[1] == cell_2[1]:
                 for direction in user_data["directions"]:
                     if direction in [[0, 1], [0, -1]]:
+
                         cells_to_del.append(direction)
 
             for cell_to_del in cells_to_del:
@@ -348,6 +379,7 @@ def alice_fires(user_data, happened):
     def delete_ship():
         for cell in user_data["Target"]:  # Проходим по клеткам корабля и отмечаем клетки в округе
             x, y = cell  # Достаем координаты
+
             # Возможные клетки
             possible_cells = [(1, 1), (-1, -1), (0, 1), (1, 0), (-1, 0), (0, -1), (-1, 1), (1, -1), (0, 0)]
             for possible in possible_cells:
@@ -395,7 +427,9 @@ def alice_fires(user_data, happened):
             answer = random_fire()
     else:
         # Переключаем на ход игрока
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
+
+        # user_data["last_turn_field"][1] = user_data["users_matrix"]
+
         user_data["users_turn"] = True
 
         # Выставление стрелянной клетки на поле
@@ -416,6 +450,8 @@ def alice_fires(user_data, happened):
         elif user_data["cheating_stage"] == 60:
             answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
         elif user_data["cheating_stage"] == 80:
+            answer = 'Роботы в отличае от людей не умеют обманывать.'
+        elif user_data["cheating_stage"] == 97:
             answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
                      'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
 
@@ -474,7 +510,6 @@ def user_fires(matrix, coord):
 
     return output
 
-
 # Начало новой игры
 def end(request, response):
     ship_battle = ShipBattle()
@@ -484,16 +519,22 @@ def end(request, response):
         "user_id": request.user_id,
         "users_turn": True,
         "alice_life": LIFE,
+
         "users_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
+
         "users_life": LIFE,
         "Target": [],
         "alices_matrix": ship_battle.field,
         "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
         "cheating_stage": 0,
         "last_turn": None,
-        "last_turn_field": [],
-        "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
+
+        # "last_turn_field": [],
+        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
     }
+
+    backup_turn = user_storage
+
 
     response.set_text(
         'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '

@@ -38,6 +38,7 @@ class AliceResponse(object):
                 "end_session": False
             }
         }
+        
 
     def dumps(self):
         return json.dumps(
