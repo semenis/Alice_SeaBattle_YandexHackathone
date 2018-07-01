@@ -370,8 +370,8 @@ def alice_fires(user_data, happened):
             user_data["users_ships"].remove(len(user_data["Target"]))
         except ValueError:
             user_data["cheating_stage"] += 5
-            return "Максимальный размер корабля на данный момент {} клетки. Отменить ход или начать игру заново?".format(
-                max(user_data["users_ships"]))
+            return "Все корабли такого размера уже уничтожены. Отменить ход или начать игру заново?"
+
 
         user_data["Target"] = []
         user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные направления
@@ -379,10 +379,11 @@ def alice_fires(user_data, happened):
     if happened == "убил" or happened == "ранил":
         # Проверка на жульничество. Если у пользователя корабль больше 4-х палубного или количество кораблей
         # определённой длины больше фиксированного
-        if not (len(user_data["Target"]) + 1 in user_data["users_ships"]):
+        try:
+            user_data["users_ships"].index(len(user_data["Target"]))
             delete_ship()
-            return "Максимальный размер корабля на данный момент {} клетки. Отменить ход или начать игру заново?".format(
-                max(user_data["users_ships"]))
+        except:
+            return "Все корабли такого размера уже уничтожены. Отменить ход или начать игру заново?"
 
         user_data["users_life"] -= 1
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
