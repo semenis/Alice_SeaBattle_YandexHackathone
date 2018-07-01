@@ -380,7 +380,7 @@ def alice_fires(user_data, happened):
         # Проверка на жульничество. Если у пользователя корабль больше 4-х палубного или количество кораблей
         # определённой длины больше фиксированного
         try:
-            user_data["users_ships"].index(len(user_data["Target"]))
+            user_data["users_ships"].index(len(user_data["Target"])+1)
             delete_ship()
         except:
             return "Все корабли такого размера уже уничтожены. Отменить ход или начать игру заново?"
