@@ -178,8 +178,7 @@ def handle_dialog(request, response, user_storage):
                     else:
                         raise CancelTurnError
                 except Exception as e:
-                    print(e)
-                    response.set_text('Невозможно отменить ход')
+                    response.set_text('Невозможно отменить ход'+str(e))
 
             # Проверка наличия слова в словах о начале игры
             elif user_message in ENDING_WORDS:
