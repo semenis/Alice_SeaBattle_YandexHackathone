@@ -53,5 +53,8 @@ class AliceResponse(object):
     def set_buttons(self, buttons):
         self._response_dict['response']['buttons'] = buttons
 
+    def end(self):
+        self._response_dict["response"]["end_session"] = True
+
     def __str__(self):
         return self.dumps()
