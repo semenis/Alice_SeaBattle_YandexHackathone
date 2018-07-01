@@ -423,6 +423,7 @@ def alice_fires(user_data, happened):
 
     for j in user_data["alices_matrix"]:
         print(j)
+    print()
     for j in user_data["users_matrix"]:
         print(j)
 
