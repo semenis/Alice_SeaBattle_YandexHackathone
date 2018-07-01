@@ -140,9 +140,10 @@ def handle_dialog(request, response, user_storage):
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
 
-        global backup_turn
+        global backup_turn, cancel, chance
 
         backup_turn = user_storage
+        cancel_chance = False
 
         # Приветствие
         response.set_text('Привет! Играем в морской бой. Каждая клетка обозначается алфавитной буквой по горизонтали '
@@ -183,6 +184,7 @@ def handle_dialog(request, response, user_storage):
             elif not user_storage["users_turn"]:
 
                 backup_turn = user_storage
+                cancel_chance = True
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
@@ -213,6 +215,8 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка корректности шаблона
                 if 0 < number < 11 and letter in ALPHABET:
+
+                    cancel_chance = False
                     result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
 
                     # Анализ результата выстрела
@@ -511,6 +515,7 @@ def end(request, response):
     }
 
     backup_turn = user_storage
+    cancel_chance = False
 
     response.set_text(
         'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
