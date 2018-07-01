@@ -137,11 +137,8 @@ def handle_dialog(request, response, user_storage):
             "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
             "cheating_stage": 0,
             "last_turn": None,
-            "last_turn_field": [],
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
-
-
 
         global backup_turn
 
@@ -168,14 +165,11 @@ def handle_dialog(request, response, user_storage):
         # Проверка слова в допустимых словах
         if user_message in ALL_WORDS:
 
-
             # Проверка наличия слова в словах об отемене хода
             if user_message in CANCEL_WORD:
                 try:
                     user_storage = backup_turn
                     user_storage["users_turn"] = False
-                    # user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
-                    # user_storage["users_matrix"] = user_storage["last_turn_field"][1]
                     response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
                 except Exception as e:
                     print(e)
@@ -189,7 +183,6 @@ def handle_dialog(request, response, user_storage):
             elif not user_storage["users_turn"]:
 
                 backup_turn = user_storage
-
 
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
@@ -206,20 +199,6 @@ def handle_dialog(request, response, user_storage):
                     alice_answer = alice_fires(user_storage, "мимо")
                     response.set_text(alice_answer)
 
-                # Проверка наличия слова в словах об отемене хода
-                elif user_message in CANCEL_WORD:
-                    try:
-                        user_storage["alices_matrix"] = user_storage["last_turn_field"][0]
-                        user_storage["users_matrix"] = user_storage["last_turn_field"][1]
-                        response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
-                        user_storage["last_turn_field"] = []
-                    except IndexError:
-                        response.set_text('Невозможно отменить ход')
-
-                # Проверка наличия слова в словах о начале игры
-                elif user_message in ENDING_WORDS:
-                    user_storage = end(request, response)
-
             # Если игрок сказал не в свой ход
             else:
                 response.set_text(choice(PHRASES_FOR_USERS_TURN))
@@ -234,9 +213,6 @@ def handle_dialog(request, response, user_storage):
 
                 # Проверка корректности шаблона
                 if 0 < number < 11 and letter in ALPHABET:
-
-                    # user_storage["last_turn_field"] = [user_storage["alices_matrix"], user_storage["users_matrix"]]
-
                     result_of_fire = user_fires(user_storage["alices_matrix"], (ALPHABET.index(letter), number - 1))
 
                     # Анализ результата выстрела
@@ -295,10 +271,6 @@ def alice_fires(user_data, happened):
             raise NoCellsError
 
         turn = choice(cells_for_fire)  # Рандомно берем
-        # Сохраняем поля Алисы и пользователя до обработки выстрела
-
-        # user_data["last_turn_field"][0] = user_data["alices_matrix"]
-
         user_data["last_turn"] = turn
 
         return "{}{}".format(ALPHABET[turn[0]].upper(), turn[1] + 1)  # Формируем ответ
@@ -367,8 +339,6 @@ def alice_fires(user_data, happened):
                 if cells_to_check[_cell] in user_data["directions"]:
                     x, y = _cell
                     user_data['last_turn'] = _cell
-
-                    user_data["last_turn_alice"] = [_cell, 0]
                     return "{}{}".format(ALPHABET[_cell[0]].upper(), _cell[1] + 1)
 
         elif not chosen and not user_data["directions"]:
@@ -405,7 +375,6 @@ def alice_fires(user_data, happened):
             raise WinnerError
 
     if happened == "убил":
-        user_data["last_turn_field"] = [user_data["alices_matrix"], user_data["users_matrix"]]
         user_data["Target"].append(user_data["last_turn"])  # Добавим клетку, чтобы в цикле она тоже отметилась
         delete_ship()
         answer = random_fire()
@@ -427,9 +396,6 @@ def alice_fires(user_data, happened):
             answer = random_fire()
     else:
         # Переключаем на ход игрока
-
-        # user_data["last_turn_field"][1] = user_data["users_matrix"]
-
         user_data["users_turn"] = True
 
         # Выставление стрелянной клетки на поле
@@ -450,10 +416,15 @@ def alice_fires(user_data, happened):
         elif user_data["cheating_stage"] == 60:
             answer = 'Моя гипотеза подтверждается с каждым моим промахом.'
         elif user_data["cheating_stage"] == 80:
-            answer = 'Роботы в отличае от людей не умеют обманывать.'
+            answer = 'Роботы в отличие от людей не умеют обманывать.'
         elif user_data["cheating_stage"] == 97:
             answer = 'Надеюсь, такая простая победа принесет вам хотя бы каплю удовольствия, ' \
                      'ведь моя задача заключается в том чтобы радовать людей и упрощать их жизнь'
+
+    for j in user_data["alices_matrix"]:
+        print(j)
+    for j in user_data["users_matrix"]:
+        print(j)
 
     return answer
 
@@ -508,6 +479,7 @@ def user_fires(matrix, coord):
             else:
                 output = 'Ранен'
 
+
     return output
 
 # Начало новой игры
@@ -519,22 +491,17 @@ def end(request, response):
         "user_id": request.user_id,
         "users_turn": True,
         "alice_life": LIFE,
-
         "users_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
-
         "users_life": LIFE,
         "Target": [],
         "alices_matrix": ship_battle.field,
         "users_matrix": [[0 for _ in range(10)] for _ in range(10)],
         "cheating_stage": 0,
         "last_turn": None,
-
-        # "last_turn_field": [],
         "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
     }
 
     backup_turn = user_storage
-
 
     response.set_text(
         'Новая игра! Напомню правила. Каждая клетка обозначается алфавитной буквой по горизонтали '
