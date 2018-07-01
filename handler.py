@@ -363,8 +363,9 @@ def alice_fires(user_data, happened):
             for possible in possible_cells:
                 # Проверка на вхождение в поле
                 if -1 < x + possible[0] < 10 and -1 < y + possible[1] < 10:
-                    # Отмечаем данную клетку
-                    user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
+                    if user_data["users_matrix"][y + possible[1]][x + possible[0]] != 3:
+                        # Отмечаем данную клетку
+                        user_data["users_matrix"][y + possible[1]][x + possible[0]] = 2
 
         try:
             user_data["users_ships"].remove(len(user_data["Target"]))
