@@ -175,7 +175,8 @@ def handle_dialog(request, response, user_storage):
                         user_storage = backup_turn
                         user_storage["users_turn"] = False
                         response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
-                    raise CancelTurnError
+                    else:
+                        raise CancelTurnError
                 except Exception as e:
                     print(e)
                     response.set_text('Невозможно отменить ход')
