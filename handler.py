@@ -378,19 +378,22 @@ def alice_fires(user_data, happened):
         user_data["directions"] = [[0, 1], [1, 0], [-1, 0], [0, -1]]  # Обновляем возможные направления
 
     if happened == "убил" or happened == "ранил":
+        # (не проверено)
+        # Добаляем клетку в список корабля
+        user_data["Target"].append(user_data["last_turn"])
         # Проверка на жульничество. Если у пользователя корабль больше 4-х палубного или количество кораблей
         # определённой длины больше фиксированного
-        try:
-            user_data["users_ships"].index(len(user_data["Target"])+1)
-            delete_ship()
-        except:
-            return "Все корабли такого размера уже уничтожены. Отменить ход или начать игру заново?"
+        if (happened == "ранил" and len(user_data["Target"]) < max(user_data["users_ships"])) or (
+                    happened == "убил" and len(user_data["Target"]) > min(user_data["users_ships"]) and len(
+                user_data["Target"]) < max(user_data["users_ships"])):
+            try:
+                user_data["users_ships"].index(len(user_data["Target"]))
+                delete_ship()
+            except:
+                return "Все корабли такого размера уже уничтожены. Отменить ход или начать игру заново?"
 
         user_data["users_life"] -= 1
         user_data["cheating_stage"] = 0  # Обнуляем уровень жулика
-
-        # Добаляем клетку в список корабля
-        user_data["Target"].append(user_data["last_turn"])
 
         # Отмечаем прошлый выстрел в матрице
         x, y = user_data["last_turn"]
