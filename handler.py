@@ -28,6 +28,8 @@ class NoCellsError(Exception):
 class WinnerError(Exception):
     pass
 
+class CancelTurnError(Exception):
+    pass
 
 class ShipBattle:
     def __init__(self):
@@ -140,7 +142,7 @@ def handle_dialog(request, response, user_storage):
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
 
-        global backup_turn, cancel, chance
+        global backup_turn, cancel_chance
 
         backup_turn = user_storage
         cancel_chance = False
@@ -169,9 +171,11 @@ def handle_dialog(request, response, user_storage):
             # Проверка наличия слова в словах об отемене хода
             if user_message in CANCEL_WORD:
                 try:
-                    user_storage = backup_turn
-                    user_storage["users_turn"] = False
-                    response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
+                    if cancel_chance:
+                        user_storage = backup_turn
+                        user_storage["users_turn"] = False
+                        response.set_text('Предыдущий ваш ход и ход Алисы отменены.')
+                    raise CancelTurnError
                 except Exception as e:
                     print(e)
                     response.set_text('Невозможно отменить ход')
