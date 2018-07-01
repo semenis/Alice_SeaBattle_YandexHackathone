@@ -442,7 +442,8 @@ def alice_fires(user_data, happened):
     print()
     for j in user_data["users_matrix"]:
         print(j)
-
+    print()
+    print(str(answer)+'answer')
     return answer
 
 
@@ -496,7 +497,7 @@ def user_fires(matrix, coord):
             else:
                 output = 'Ранен'
 
-
+    print(str(output)+'output')
     return output
 
 # Начало новой игры
