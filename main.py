@@ -28,7 +28,8 @@ session_storage = {}
 # Операвтивная памятьна heroku не стабильна, поэтому придется сохраняться на диск
 with open("sessions.json", "w", encoding="utf8") as file:
     json.dump(session_storage, fp=file)
-    
+
+
 # Задаем параметры приложения Flask.
 @app.route("/", methods=["POST"])
 def main():
@@ -37,7 +38,7 @@ def main():
         session_storage = json.loads(file.read())
 
     alice_request = AliceRequest(request.json)
-    logging.info("Request: {}".format(alice_request))
+    # logging.info("Request: {}".format(alice_request))
 
     alice_response = AliceResponse(alice_request)
 
@@ -46,7 +47,7 @@ def main():
     alice_response, session_storage[user_id] = handle_dialog(
         alice_request, alice_response, session_storage.get(user_id)
     )
-    
+
     # Потому что оперативка плохо работает
     with open("sessions.json", "w", encoding="utf8") as file:
         json.dump(session_storage, fp=file)
