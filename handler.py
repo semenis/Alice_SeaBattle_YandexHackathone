@@ -141,7 +141,8 @@ def handle_dialog(request, response, user_storage):
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
 
-
+        # Флаг добавления в логи/чтоб не мусорить ping
+        user_storage['to_log'] = True
 
         global backup_turn
 
@@ -159,6 +160,11 @@ def handle_dialog(request, response, user_storage):
 
     # Обрабатываем ответ пользователя.
     user_message = request.command.lower().strip().replace(' ', '')
+    # ответ яндекс боту
+    if user_message == 'ping':
+        response.set_text('pong')
+        user_storage['to_log'] = False
+        return response, user_storage
 
     # Пробуем перевести в координаты (между if и elif нельзя)
     try_to_make_coor = ''.join(findall(r'\w+', user_message))
