@@ -122,6 +122,13 @@ GAME_RULES = '''Каждая клетка игрового поля обозна
 Для отмены действия скажите "Отменить"
 Для начала новой игры скажите "Новая игра" или "Выход"'''
 
+# кнопки помощи
+BUTTONS = [
+            {"title": "Показать поле", "hide": False},
+            {"title": "Новая игра", "hide": False},
+            {"title": "Отменить ход", "hide": False}
+        ]
+
 
 # Функция для непосредственной обработки диалога.
 def handle_dialog(request, response, user_storage):
@@ -144,13 +151,10 @@ def handle_dialog(request, response, user_storage):
             "cheating_stage": 0,
             "last_turn": None,
             "last_turn_field": [],
-            "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]],
-            "suggests": [
-                {"title": "Показать поле", "hide": False},
-                {"title": "Новая игра", "hide": False},
-                {"title": "Отменить ход", "hide": False}
-            ]
+            "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
+
+
 
         # Флаг добавления в логи/чтоб не мусорить ping
         user_storage['to_log'] = True
@@ -174,10 +178,11 @@ def handle_dialog(request, response, user_storage):
 
     # вывод поля юзера
     if user_message == 'показатьполе':
+        resp = ''
         for row in user_storage["users_matrix"]:
-            resp += (' '.join([str(elem) for elem in row]))
+            resp += ' '.join([str(elem) for elem in row])
         response.set_text(resp)
-        response.set_buttons(user_storage['suggests'])
+        response.set_buttons(BUTTONS)
         return response, user_storage
 
     # Пробуем перевести в координаты (между if и elif нельзя)
@@ -296,7 +301,7 @@ def handle_dialog(request, response, user_storage):
         user_storage = end(request, response)
 
     # В любом случае
-    response.set_buttons(user_storage['suggests'])
+    response.set_buttons(BUTTONS)
     return response, user_storage
 
 
