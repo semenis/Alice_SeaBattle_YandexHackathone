@@ -124,9 +124,9 @@ GAME_RULES = '''Каждая клетка игрового поля обозна
 
 # кнопки помощи
 BUTTONS = [
-            {"title": "Показать поле", "hide": False},
-            {"title": "Новая игра", "hide": False},
-            {"title": "Отменить ход", "hide": False}
+            {"title": "Показать поле"},
+            {"title": "Новая игра"},
+            {"title": "Отменить ход"}
         ]
 
 
@@ -179,7 +179,7 @@ def handle_dialog(request, response, user_storage):
     if user_message == 'показатьполе':
         str_num = 1
         resp = '  '+' '.join([s.upper() for s in ALPHABET]) + '\n'
-        for row in user_storage["users_matrix"]:
+        for row in user_storage["alices_matrix"]:
             resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('0', '~') for elem in row]) + '\n'
             str_num += 1
         response.set_text(resp)
