@@ -154,11 +154,6 @@ def handle_dialog(request, response, user_storage):
             "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
         }
 
-
-
-        # Флаг добавления в логи/чтоб не мусорить ping
-        user_storage['to_log'] = True
-
         global backup_turn
 
         backup_turn = user_storage
@@ -167,6 +162,9 @@ def handle_dialog(request, response, user_storage):
         response.set_text('Привет! Играем в морской бой. '+GAME_RULES)
         # Выходим из функции и ждем ответа
         return response, user_storage
+
+    # Флаг добавления в логи/чтоб не мусорить ping
+    user_storage['to_log'] = True
 
     # Обрабатываем ответ пользователя.
     user_message = request.command.lower().strip().replace(' ', '')
@@ -180,7 +178,7 @@ def handle_dialog(request, response, user_storage):
     if user_message == 'показатьполе':
         str_num = 1
         resp = '  '+' '.join([s.upper() for s in ALPHABET]) + '\n'
-        for row in user_matrix:
+        for row in user_storage["users_matrix"]:
             resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('0', '~') for elem in row]) + '\n'
             str_num += 1
         response.set_text(resp)
