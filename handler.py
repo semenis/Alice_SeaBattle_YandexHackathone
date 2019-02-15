@@ -151,7 +151,8 @@ def handle_dialog(request, response, user_storage):
             "cheating_stage": 0,
             "last_turn": None,
             "last_turn_field": [],
-            "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]]
+            "directions": [[0, 1], [1, 0], [-1, 0], [0, -1]],
+            "to_log": True
         }
 
         global backup_turn
