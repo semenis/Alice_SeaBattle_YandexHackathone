@@ -177,6 +177,7 @@ def handle_dialog(request, response, user_storage):
         for row in user_storage["users_matrix"]:
             resp += (' '.join([str(elem) for elem in row]))
         response.set_text(resp)
+        response.set_buttons(user_storage['suggests'])
         return response, user_storage
 
     # Пробуем перевести в координаты (между if и elif нельзя)
@@ -295,6 +296,7 @@ def handle_dialog(request, response, user_storage):
         user_storage = end(request, response)
 
     # В любом случае
+    response.set_buttons(user_storage['suggests'])
     return response, user_storage
 
 
