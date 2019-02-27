@@ -136,7 +136,7 @@ BUTTONS = [
 # Функция для непосредственной обработки диалога.
 def handle_dialog(request, response, user_storage):
     # response.user_id
-    if request.is_new_session:
+    if request.is_new_session or user_storage is None:
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
         ship_battle = ShipBattle()
