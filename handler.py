@@ -560,7 +560,8 @@ def end(request, response):
         "last_turn": None,
 
         # "last_turn_field": [],
-        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)]
+        "directions": [(0, 1), (1, 0), (-1, 0), (0, -1)],
+        "to_log": True
     }
 
     backup_turn = user_storage
