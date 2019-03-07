@@ -549,9 +549,7 @@ def end(request, response):
         "user_id": request.user_id,
         "users_turn": True,
         "alice_life": LIFE,
-
         "users_ships": [4, 3, 3, 2, 2, 2, 1, 1, 1, 1],
-
         "users_life": LIFE,
         "Target": [],
         "alices_matrix": ship_battle.field,
