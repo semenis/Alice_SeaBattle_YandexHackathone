@@ -199,7 +199,7 @@ def handle_dialog(request, response, user_storage):
         str_num = 1
         resp = '  '+' '.join([s.upper() for s in ALPHABET]) + '\n'
         for row in user_storage["alices_matrix"]:
-            resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('1', '~').replace('0', '-') for elem in row]) + '\n'
+            resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('1', '~').replace('0', '~') for elem in row]) + '\n'
             str_num += 1
         response.set_text(resp)
         response.set_buttons(BUTTONS)
@@ -232,7 +232,7 @@ def handle_dialog(request, response, user_storage):
 
             # Если ходит Алиса
             elif not user_storage["users_turn"]:
-                response.set_buttons(BUTTONS_MENU)
+                response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
                 backup_turn = user_storage
 
 
