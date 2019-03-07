@@ -138,6 +138,12 @@ BUTTONS_AFTER_ALICE_TURN = [
     {"title": "Ранила"},
     {"title": "Потопила"},
 ]
+#Стандартные кнопки меню
+BUTTONS_MENU = [
+    {"title": "Показать поле"},
+    {"title": "Новая игра"},
+    {"title": "Отменить ход"}
+]
 
 
 # Функция для непосредственной обработки диалога.
@@ -172,6 +178,7 @@ def handle_dialog(request, response, user_storage):
         backup_turn = user_storage
 
         # Приветствие
+        response.set_buttons(BUTTONS_MENU)
         response.set_text('Привет! Играем в морской бой. '+GAME_RULES)
         # Выходим из функции и ждем ответа
         return response, user_storage
@@ -260,6 +267,7 @@ def handle_dialog(request, response, user_storage):
 
             # Если игрок сказал не в свой ход
             else:
+                response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
                 response.set_text(choice(PHRASES_FOR_USERS_TURN))
 
         # Проверка на присутствие шаблона re
@@ -281,10 +289,12 @@ def handle_dialog(request, response, user_storage):
                     if result_of_fire == 'Мимо':
                         user_storage["users_turn"] = False
                         alice_answer = alice_fires(user_storage, "remember")
+                        response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
                         response.set_text('Мимо. Я хожу. ' + alice_answer)
                     else:
                         user_storage["alice_life"] -= 1
                         if user_storage["alice_life"] < 1:
+                            response.set_buttons(BUTTONS_MENU)
                             response.set_text("Вы победили меня, поздравляю! Спасибо за игру!")
                             user_storage = end(request, response)
                         else:
@@ -298,6 +308,7 @@ def handle_dialog(request, response, user_storage):
 
             # Если ход Алисы
             else:
+                response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
                 response.set_text(choice(PHRASES_FOR_ALICES_TURN))
 
         # Если ничему не соответствует
@@ -313,7 +324,7 @@ def handle_dialog(request, response, user_storage):
         response.set_text("Я выиграла, спасибо за игру!")
         user_storage = end(request, response)
 
-    # В любом случае
+    # ----В любом случае-----
     #Не в любом, надо использовать разные наборы кнопок в разных случаях, в начале функции зададим так, потом помняем (если сработает)
     #response.set_buttons(BUTTONS)
     return response, user_storage
