@@ -123,6 +123,7 @@ GAME_RULES = '''Каждая клетка игрового поля обозна
 Для начала новой игры скажите "Новая игра" или "Выход"'''
 
 # кнопки помощи
+#TODO зачем показывать все кнопки всегда, можно показывать только часть (Пишу это) да и вообще - кнопок перебор
 BUTTONS = [
     {"title": "Мимо"},
     {"title": "Ранила"},
@@ -131,10 +132,18 @@ BUTTONS = [
     {"title": "Новая игра"},
     {"title": "Отменить ход"}
 ]
+# Кнопки после хода Алисы!
+BUTTONS_AFTER_ALICE_TURN = [
+    {"title": "Мимо"},
+    {"title": "Ранила"},
+    {"title": "Потопила"},
+]
 
 
 # Функция для непосредственной обработки диалога.
 def handle_dialog(request, response, user_storage):
+    #Задаем дефолтный набор кнопок сразу, поменяем его в течение кода
+    response.set_buttons(BUTTONS)
     # response.user_id
     if request.is_new_session or user_storage is None:
         # Это новый пользователь.
@@ -183,7 +192,7 @@ def handle_dialog(request, response, user_storage):
         str_num = 1
         resp = '  '+' '.join([s.upper() for s in ALPHABET]) + '\n'
         for row in user_storage["alices_matrix"]:
-            resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('1', '~').replace('0', '~') for elem in row]) + '\n'
+            resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('1', '~').replace('0', '-') for elem in row]) + '\n'
             str_num += 1
         response.set_text(resp)
         response.set_buttons(BUTTONS)
@@ -216,7 +225,7 @@ def handle_dialog(request, response, user_storage):
 
             # Если ходит Алиса
             elif not user_storage["users_turn"]:
-
+                response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
                 backup_turn = user_storage
 
 
@@ -305,7 +314,8 @@ def handle_dialog(request, response, user_storage):
         user_storage = end(request, response)
 
     # В любом случае
-    response.set_buttons(BUTTONS)
+    #Не в любом, надо использовать разные наборы кнопок в разных случаях, в начале функции зададим так, потом помняем (если сработает)
+    #response.set_buttons(BUTTONS)
     return response, user_storage
 
 
