@@ -142,7 +142,7 @@ BUTTONS_AFTER_ALICE_TURN = [
 BUTTONS_MENU = [
     {"title": "Показать поле"},
     {"title": "Новая игра"},
-    {"title": "Отменить ход"}
+   # {"title": "Отменить ход"}
 ]
 
 
@@ -239,11 +239,13 @@ def handle_dialog(request, response, user_storage):
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
                     alice_answer = alice_fires(user_storage, "убил")
+                    response.set_buttons(BUTTONS_MENU)
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о попадании
                 elif user_message in INJURED_WORDS:
                     alice_answer = alice_fires(user_storage, "ранил")
+                    response.set_buttons(BUTTONS_MENU)
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о промахе
@@ -588,5 +590,6 @@ def end(request, response):
 
 
     response.set_text('Новая игра! Напомню правила. '+GAME_RULES)
+    response.set_buttons(BUTTONS_MENU)
 
     return user_storage
