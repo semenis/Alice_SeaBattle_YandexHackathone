@@ -202,7 +202,7 @@ def handle_dialog(request, response, user_storage):
             resp += str(str_num).rjust(2)+' '.join([str(elem).replace('3', 'X').replace('2', 'O').replace('1', '~').replace('0', '~') for elem in row]) + '\n'
             str_num += 1
         response.set_text(resp)
-        response.set_buttons(BUTTONS)
+        response.set_buttons(BUTTONS_MENU)
         return response, user_storage
 
     # Пробуем перевести в координаты (между if и elif нельзя)
@@ -249,7 +249,7 @@ def handle_dialog(request, response, user_storage):
                 # Проверка наличия слова в словах о промахе
                 elif user_message in MISSED_WORDS:
                     alice_answer = alice_fires(user_storage, "мимо")
-                    response.set_buttons(BUTTONS)
+                    response.set_buttons(BUTTONS_MENU)
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах об отемене хода
