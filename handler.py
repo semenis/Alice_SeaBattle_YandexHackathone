@@ -232,7 +232,7 @@ def handle_dialog(request, response, user_storage):
 
             # Если ходит Алиса
             elif not user_storage["users_turn"]:
-                response.set_buttons(BUTTONS_AFTER_ALICE_TURN)
+                response.set_buttons(BUTTONS_MENU)
                 backup_turn = user_storage
 
 
