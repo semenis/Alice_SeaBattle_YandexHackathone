@@ -243,13 +243,13 @@ def handle_dialog(request, response, user_storage):
                 # Проверка наличия слова в словах о потоплении
                 if user_message in KILLED_WORDS:
                     alice_answer = alice_fires(user_storage, "убил")
-                    response.set_buttons(BUTTONS_MENU)
+                    response.set_buttons(BUTTONS)
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о попадании
                 elif user_message in INJURED_WORDS:
                     alice_answer = alice_fires(user_storage, "ранил")
-                    response.set_buttons(BUTTONS_MENU)
+                    response.set_buttons(BUTTONS)
                     response.set_text(alice_answer)
 
                 # Проверка наличия слова в словах о промахе
@@ -305,6 +305,7 @@ def handle_dialog(request, response, user_storage):
                             response.set_text("Вы победили меня, поздравляю! Спасибо за игру!")
                             user_storage = end(request, response)
                         else:
+                            response.set_buttons(BUTTONS_MENU)
                             response.set_text(result_of_fire)
 
                 # Если не корректный ввод
